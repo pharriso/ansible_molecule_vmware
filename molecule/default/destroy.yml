@@ -1,0 +1,65 @@
+---
+- name: Destroy
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars_files:
+  - vault.yml
+  no_log: false
+  tasks:
+    - name: remove vm
+      vmware_guest:
+        hostname: "{{ vcenter_hostname }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        validate_certs: "{{ vcenter_validate_certs }}"
+        name: "{{ item.name }}"
+        state: absent
+        force: yes
+      delegate_to: localhost
+      loop: "{{ molecule_yml.platforms }}"
+
+    - name: remove vm from idm
+      ipa_host:
+        name: "{{ item.name }}"
+        state: absent
+        ipa_host: "{{ ipa_host }}"
+        ipa_user: "{{ ipa_user }}"
+        ipa_pass: "{{ ipa_pass }}"
+        update_dns: false
+      delegate_to: localhost
+      register: result
+      retries: 3
+      delay: 3
+      until: result is success
+      loop: "{{ molecule_yml.platforms }}"
+
+    - name: delete host in satellite
+      redhat.satellite.host:
+        username: "{{ sat_reg_user }}"
+        password: "{{ sat_reg_passwd }}"
+        server_url: "https://{{ sat_server }}"
+        validate_certs: no
+        name: "{{ item.name }}"
+        state: absent
+      delegate_to: localhost
+      register: satremoved
+      retries: 1
+      delay: 3
+      until: satremoved is success
+      loop: "{{ molecule_yml.platforms }}"
+
+    # Mandatory configuration for Molecule to function.
+
+    - name: Populate instance config
+      set_fact:
+        instance_conf: {}
+
+    - name: Dump instance config
+      copy:
+        content: |
+          # Molecule managed
+
+          {{ instance_conf | to_json | from_json | to_yaml }}
+        dest: "{{ molecule_instance_config }}"
+      when: server.changed | default(false) | bool

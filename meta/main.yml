@@ -1,0 +1,15 @@
+galaxy_info:
+  author: Pat Harrison
+  description: register rhel vm to satellite
+
+  license: "license (BSD, MIT)"
+
+  min_ansible_version: 2.9
+
+  platforms:
+  - name: Red Hat Enteprise Linux
+    versions:
+     - 7
+     - 8
+
+dependencies: []

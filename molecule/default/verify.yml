@@ -1,0 +1,14 @@
+---
+# This is an example playbook to execute Ansible tests.
+
+- name: Verify
+  hosts: all
+  gather_facts: false
+  tasks:
+  - name: run subscription-manager status
+    shell: subscription-manager status
+    register: subscription_status
+
+  - name: check if subscription manager status returned exit code 0
+    assert:
+      that: subscription_status.rc == 0

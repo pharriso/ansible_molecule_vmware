@@ -1,0 +1,31 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: delegated
+  vcenter_datacenter: demolab
+  vcenter_cluster: rhnode2
+  vcenter_folder: /demolab/vm
+platforms:
+  - name: molecule.demolab.local
+    vm_rhel_version: rhel8
+    vm_memory: 2048
+    vm_cpu_cores: 2
+    vm_network: infra
+    vm_domain: demolab.local
+    vm_user: root
+    vm_port: 22    
+    ssh_key_file: ~/.ssh/demolab-root
+provisioner:
+  name: ansible
+  config_options:
+    defaults:
+      vault_password_file: ~/vault_password.txt
+  inventory:
+    group_vars:
+      all:
+        tower_user_name: pharriso
+verifier:
+  name: ansible
+lint: |
+  ansible-lint -x 305 --exclude molecule/default/

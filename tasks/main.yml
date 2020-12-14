@@ -1,0 +1,27 @@
+---
+
+- name: load vars for os type
+  include_vars:
+    file: "rhel{{ ansible_distribution_major_version }}.yml"
+
+- name: install satellite katello certificate
+  yum:
+    name: http://{{ sat_server }}/pub/katello-ca-consumer-latest.noarch.rpm
+    state: installed
+    disable_gpg_check: true
+
+- name: register to satellite
+  redhat_subscription:
+    state: present
+    activationkey: "rhel{{ ansible_distribution_major_version }}-sa"
+    org_id: demolab
+
+- name: enable required repos
+  rhsm_repository:
+    name: "{{ repos }}"
+    state: enabled
+
+- name: install katello host tools
+  yum:
+    name: katello-host-tools
+    state: installed

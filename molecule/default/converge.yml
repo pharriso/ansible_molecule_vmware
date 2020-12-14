@@ -1,0 +1,7 @@
+---
+- name: Converge
+  hosts: all
+  tasks:
+    - name: "Include register_vm"
+      include_role:
+        name: "register_vm"
